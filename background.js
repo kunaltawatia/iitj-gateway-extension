@@ -7,7 +7,7 @@ const fetchTimeout = (url, ms, { signal, ...options } = {}) => {
 };
 
 function getIPaddress() {
-  return fetchTimeout('https://api.ipify.org/?format=json', 2000, {
+  return fetchTimeout('https://api.ipify.org/?format=json', 4000, {
     mode: "cors",
   })
     .then(res => res.json())
@@ -26,35 +26,41 @@ function isConnected() {
     .catch(() => false);
 }
 
-let authGroupId = null, authTabIds = [];
+let authTabIds = [];
+const authGroupOptions = {
+  title: "Auth", color: "green"
+};
 function openGateway() {
-  return chrome.tabs.create({
-    url: "http://www.gstatic.com/generate_204",
-    active: false,
-    index: 0
-  }).then(tab => {
-    console.log('Tab created', tab.id);
-    chrome.tabs.group({
-      tabIds: tab.id,
-      groupId: authGroupId,
-    }, groupId => {
-      console.log('Group tapped', groupId);
-      authTabIds.push(tab.id);
-      authGroupId = groupId;
-      chrome.tabGroups?.update(groupId, {
-        collapsed: true, title: "Auth", color: "green"
-      });
-    })
+  return chrome.tabGroups.query(authGroupOptions).then((tabGroups) => {
+    authGroupId = tabGroups[0]?.id ?? null;
+    chrome.tabs.create({
+      url: "http://www.gstatic.com/generate_204",
+      active: false,
+      index: 0
+    }).then(tab => {
+      console.log('Tab created', tab.id);
+      chrome.tabs.group({
+        tabIds: tab.id,
+        groupId: authGroupId,
+      }, groupId => {
+        console.log('Group tapped', groupId);
+        authTabIds.push(tab.id);
+        chrome.tabGroups?.update(groupId, { ...authGroupOptions, collapsed: true });
+      })
+    });
+  })
+}
+function closeEmptyAuthTabs() {
+  chrome.tabs.query({ status: "complete" }, (tabs) => {
+    tabs.map((tab) => {
+      if ((tab.url === "" && tab.pendingUrl == "http://www.gstatic.com/generate_204") ||
+        (tab.url === "https://gateway.iitj.ac.in:1003/")) {
+        chrome.tabs.remove(tab.id, () => console.log('Removed', tab.id));
+      }
+    });
   });
 }
-function closeAuthTabs() {
-  authGroupId = null;
-  authTabIds = [];
-  chrome.tabs.remove(authTabIds);
-}
-chrome.tabGroups.onRemoved.addListener((group) => {
-  if (group.id == authGroupId) authGroupId = null;
-})
+setInterval(closeEmptyAuthTabs, 2000);
 
 function getCredentials() {
   return chrome.storage.sync.get(['un', 'pd'])
@@ -93,11 +99,12 @@ chrome.tabs.onUpdated.addListener((id, info, tab) => {
     if (tab.url.startsWith("https://gateway.iitj.ac.in")) {
       if (tab.url.includes("fgtauth")) {
         getCredentials().then(([username, password]) => {
-          chrome.scripting.executeScript({
-            target: { tabId: id },
-            func: enterGateway,
-            args: [username, password]
-          });
+          if (username && password)
+            chrome.scripting.executeScript({
+              target: { tabId: id },
+              func: enterGateway,
+              args: [username, password]
+            });
         });
       }
       else if (tab.url.includes("keepalive")) {
@@ -126,4 +133,4 @@ setInterval(() => {
   if (!polling) {
     poll();
   }
-}, 30000);
+}, 15000);

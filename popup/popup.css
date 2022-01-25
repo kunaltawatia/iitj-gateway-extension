@@ -1,0 +1,207 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap");
+
+.App {
+  display: flex;
+  flex-direction: column;
+  width: 20rem;
+  border: 2px solid #80808060;
+  padding: 1rem 1rem 0.5rem;
+}
+
+h1 {
+  font-size: 24px;
+  text-align: center;
+}
+
+.stats {
+  display: flex;
+  justify-content: space-around;
+  border: 2px solid;
+  margin: 1rem 2rem;
+  padding: 0.5rem;
+  position: relative;
+}
+
+.stats > span {
+  font-size: 12px;
+  position: absolute;
+  top: -16px;
+  left: 4px;
+  background-color: white;
+  padding: 2px;
+}
+
+.stats > p {
+  font-size: 14px;
+}
+
+body,
+p,
+label {
+  margin: 0;
+  font-family: "Poppins", sans-serif;
+  color: #00000090;
+  font-size: 14px;
+}
+
+.version {
+  font-size: 10px;
+  text-align: center;
+  margin-top: 0.5rem;
+}
+
+span {
+  white-space: pre-wrap;
+  font-size: 14px;
+  text-align: center;
+  margin-top: 4px;
+}
+
+.notification {
+  color: rgba(255, 0, 0, 0.603);
+  text-align: center;
+  font-size: 12px;
+  margin-top: 1rem;
+  white-space: pre-wrap;
+}
+
+input {
+  padding: 2px 16px;
+  border: 2px dashed grey;
+  border-radius: 2rem;
+  font-family: "Poppins", sans-serif;
+  color: #00000090;
+  font-size: 14px;
+  max-width: 75%;
+}
+
+input::placeholder {
+  color: #80808060;
+}
+
+input:focus {
+  outline: none;
+}
+
+.input-holder {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 5px;
+}
+
+.button-holder {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  margin: 12px;
+}
+
+button {
+  text-decoration: none;
+
+  text-transform: uppercase;
+  color: #808080;
+  font-family: poppins, sans-serif;
+  font-weight: bold;
+  font-size: 12px;
+
+  padding: 7px 30px;
+  max-width: 7rem;
+
+  background-color: white;
+
+  border: 2px solid #808080;
+  border-radius: 100px;
+  outline: none;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+button:hover {
+  box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.26);
+  transform: translateY(-3px) translateX(-3px);
+}
+
+button:active {
+  box-shadow: none;
+  transform: translateY(3px);
+}
+
+.manual-button {
+  font-size: 16px;
+  align-self: center;
+  margin: 4px;
+  padding: 0 2px;
+  cursor: pointer;
+}
+
+.manual-button:hover {
+  background-color: #b1aeae60;
+}
+
+.manual {
+  border: 1px solid;
+  padding: 1rem;
+  text-align: left;
+}
+
+.loading-container {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 8px;
+	flex-direction: column;
+	padding: 4rem;
+}
+
+.loading-container > p {
+	text-align: center;
+	font-family: "Roboto", arial, sans-serif;
+	font-size: 12px;
+}
+
+
+.loading-container > p:first-child {
+	font-size: 14px;
+	font-weight: bold;
+}
+
+.lds-ripple {
+	display: inline-block;
+	position: relative;
+	width: 80px;
+	height: 80px;
+}
+.lds-ripple div {
+	position: absolute;
+	border: 4px solid rgb(125, 123, 123);
+	opacity: 1;
+	border-radius: 50%;
+	animation: lds-ripple 1s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+}
+.lds-ripple div:nth-child(2) {
+	animation-delay: -0.5s;
+}
+
+@keyframes lds-ripple {
+	0% {
+		top: 36px;
+		left: 36px;
+		width: 0;
+		height: 0;
+		opacity: 1;
+	}
+	100% {
+		top: 0px;
+		left: 0px;
+		width: 72px;
+		height: 72px;
+		opacity: 0;
+	}
+}
