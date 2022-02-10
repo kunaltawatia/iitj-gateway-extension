@@ -90,6 +90,12 @@ input:focus {
   margin: 5px;
 }
 
+.input-holder.border {
+  padding: 10px;
+  border: 2px dashed grey;
+  font-weight: bold;
+}
+
 .button-holder {
   display: flex;
   align-items: center;
@@ -178,6 +184,7 @@ button:active {
 	width: 80px;
 	height: 80px;
 }
+
 .lds-ripple div {
 	position: absolute;
 	border: 4px solid rgb(125, 123, 123);
@@ -204,4 +211,8 @@ button:active {
 		height: 72px;
 		opacity: 0;
 	}
+}
+
+.hidden {
+ display: none;
 }

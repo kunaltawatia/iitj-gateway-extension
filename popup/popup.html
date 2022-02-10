@@ -3,24 +3,53 @@
 
 <head>
   <link rel="stylesheet" href="popup.css">
+  <link rel="stylesheet" href="switch.css">
 </head>
 
 <body>
   <div class="App">
-    <h1>Gateway Extension</h1>
-    <div class="input-holder">
-      <label for="un">Username</label>
-      <input id="un">
+    <div style="display: flex; align-items: center; justify-content: center;">
+      <img src="../images/icon-black-g-32.png" alt="gateway-extension-logo" width="32" height="32"
+        style="margin: 0.5rem;" />
+      <h1>Gateway Extension</h1>
     </div>
-    <div class="input-holder">
-      <label for="pd">Password</label>
-      <input id="pd">
+    <div id="loading-container" class="loading-container">
+      <div class="lds-ripple">
+        <div></div>
+        <div></div>
+      </div>
+      <span>Loading state...</span>
     </div>
-    <div class="button-holder">
-      <button id="save">Save</button>
+    <div id="form-container" class="hidden">
+      <div class="input-holder border">
+        <label for="auto-navigate">Auto Navigate Gateway</label>
+        <label class="switch">
+          <input id="auto-navigate" type="checkbox">
+          <span class="slider round"></span>
+        </label>
+      </div>
+      <div class="input-holder border">
+        <label for="auto-login">Auto Login</label>
+        <label class="switch">
+          <input id="auto-login" type="checkbox">
+          <span class="slider round"></span>
+        </label>
+      </div>
+      <div id="LDAP">
+        <h3 style="text-align: center;">LDAP</h3>
+        <div class="input-holder">
+          <label for="username">Username</label>
+          <input id="username">
+        </div>
+        <div class="input-holder">
+          <label for="password">Password</label>
+          <input id="password">
+        </div>
+      </div>
     </div>
     <p class="version">v0.1</p>
   </div>
+
   <script src="popup.js"></script>
 </body>
 

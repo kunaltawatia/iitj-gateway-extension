@@ -10,12 +10,20 @@
     "storage",
     "scripting",
     "tabs",
-    "tabGroups"
+    "tabGroups",
+    "webRequest"
   ],
   "host_permissions": [
     "https://*/*"
   ],
   "action": {
     "default_popup": "popup/popup.html"
+  },
+  "icons": {
+    "16": "images/icon-black-g-16.png",
+    "32": "images/icon-black-g-32.png",
+    "48": "images/icon-black-g-48.png",
+    "64": "images/icon-black-g-64.png",
+    "128": "images/icon-black-g-128.png"
   }
 }

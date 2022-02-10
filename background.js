@@ -1,136 +1,128 @@
-const fetchTimeout = (url, ms, { signal, ...options } = {}) => {
-  const controller = new AbortController();
-  const promise = fetch(url, { signal: controller.signal, ...options });
-  if (signal) signal.addEventListener("abort", () => controller.abort());
-  const timeout = setTimeout(() => controller.abort(), ms);
-  return promise.finally(() => clearTimeout(timeout));
-};
+importScripts('rxjs/rxjs.umd.min.js');
+importScripts('utility/connected.js');
+importScripts('utility/gateway.js');
 
-function getIPaddress() {
-  return fetchTimeout('https://api.ipify.org/?format=json', 4000, {
-    mode: "cors",
+const { interval, from, merge } = rxjs;
+const {
+  map,
+  mergeMap,
+  filter,
+  throttleTime,
+  bufferTime,
+  pairwise,
+} = rxjs.operators;
+
+const heartBeat = interval(1500);
+
+const networkCheckObesrvable_v1 = heartBeat.pipe(
+  mergeMap(() => from(isConnected(2000)))
+);
+const networkCheckObesrvable_v2 = heartBeat.pipe(
+  mergeMap(() => from(isConnected_v2(2000)))
+);
+
+const onErrorObservable = rxjs.Observable.create(observer => {
+  const listener = chrome.webRequest.onErrorOccurred.addListener(
+    (details) => { observer.next(details) },
+    { urls: ["<all_urls>"] }
+  );
+  return () => chrome.webRequest.onErrorOccurred.removeListener(listener);
+});
+
+const failedObservable = merge(
+  onErrorObservable.pipe(
+    filter(details => (details.error === "net::ERR_CERT_COMMON_NAME_INVALID")),
+    map((details) => ({ observable: 'onError', details, time: new Date().toTimeString() }))
+  ),
+  networkCheckObesrvable_v1.pipe(
+    filter(connected => (!connected)),
+    map((connected) => ({ observable: 'network check v1', details: { connected }, time: new Date().toTimeString() }))
+  ),
+  networkCheckObesrvable_v2.pipe(
+    filter(connected => (!connected)),
+    map((connected) => ({ observable: 'network check v2', details: { connected }, time: new Date().toTimeString() }))
+  )
+);
+
+failedObservable.subscribe((error) => {
+  console.log('Failed observable emitted:', error);
+});
+
+const navigatorOnlineObservable = interval(100).pipe(
+  map(() => navigator.onLine),
+  pairwise(),
+  filter(([prev_value, new_value]) => (new_value && prev_value !== new_value)),
+)
+navigatorOnlineObservable.subscribe(console.log);
+
+const majorObservable = merge(
+  failedObservable.pipe(
+    bufferTime(1500),
+    filter(failureList => ((failureList.length > 1) && navigator.onLine)),
+    throttleTime(15000),
+    map((failureList) => ({ observable: 'failed observable', failureList, time: new Date().toTimeString() }))
+  ),
+  navigatorOnlineObservable.pipe(
+    map(() => ({ observable: 'window navigator online', time: new Date().toTimeString() }))
+  )
+);
+
+majorObservable.subscribe((details) => {
+  console.log('Major observable emitted:', details);
+  getAutoNavigateSetting().then(navigate => {
+    if (navigate) openGateway();
   })
-    .then(res => res.json())
-    .then(data => data.ip)
-}
+});
 
-function validateIPaddress(ip) {
-  if (/^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(ip))
-    return true;
-  return false;
-}
+// const onCompletedObservable = rxjs.Observable.create(observer => {
+//   const listener = chrome.webRequest.onCompleted.addListener(
+//     (details) => { observer.next(details) },
+//     { urls: ["<all_urls>"] }
+//   );
+//   return () => chrome.webRequest.onCompleted.removeListener(listener);
+// });
 
-function isConnected() {
-  return getIPaddress()
-    .then(ip => validateIPaddress(ip))
-    .catch(() => false);
-}
+// onCompletedObservable.pipe(
+//   filter(details => (!details.fromCache))
+// ).subscribe(console.log);
 
-let authTabIds = [];
-const authGroupOptions = {
-  title: "Auth", color: "green"
-};
-function openGateway() {
-  return chrome.tabGroups.query(authGroupOptions).then((tabGroups) => {
-    authGroupId = tabGroups[0]?.id ?? null;
-    chrome.tabs.create({
-      url: "http://www.gstatic.com/generate_204",
-      active: false,
-      index: 0
-    }).then(tab => {
-      console.log('Tab created', tab.id);
-      chrome.tabs.group({
-        tabIds: tab.id,
-        groupId: authGroupId,
-      }, groupId => {
-        console.log('Group tapped', groupId);
-        authTabIds.push(tab.id);
-        chrome.tabGroups?.update(groupId, { ...authGroupOptions, collapsed: true });
-      })
-    });
-  })
-}
+// Clear empty tabs for the attempt of gateway
 function closeEmptyAuthTabs() {
   chrome.tabs.query({ status: "complete" }, (tabs) => {
     tabs.map((tab) => {
       if ((tab.url === "" && tab.pendingUrl == "http://www.gstatic.com/generate_204") ||
+        (tab.title.startsWith("www.gstatic.com") && tab.url == "http://www.gstatic.com/generate_204") ||
         (tab.url === "https://gateway.iitj.ac.in:1003/")) {
         chrome.tabs.remove(tab.id, () => console.log('Removed', tab.id));
       }
     });
   });
 }
-setInterval(closeEmptyAuthTabs, 2000);
+heartBeat.subscribe(closeEmptyAuthTabs);
 
-function getCredentials() {
-  return chrome.storage.sync.get(['un', 'pd'])
-    .then(({ un, pd }) => [un, pd])
-}
-
-const enterGateway = (username, password) => {
-  console.log('Extension accessed')
-  usernameInput = document.getElementById("ft_un");
-  usernameInput.value = username;
-  passwordInput = document.getElementById("ft_pd");
-  passwordInput.value = password;
-  document.forms[0].submit();
-}
-
-let polling = false;
-function poll() {
-  if (!polling) console.log('Polling started');
-  polling = true;
-  isConnected().then(connected => {
-    if (connected) {
-      console.log('Connected');
-      setTimeout(poll, 1000);
-    }
-    else {
-      console.log('Connection lost');
-      polling = false;
-      openGateway();
-    }
-  });
-}
-
+// Handle loaded tabs of the gateway
 let token = null;
 chrome.tabs.onUpdated.addListener((id, info, tab) => {
   if (info.status === "complete") {
     if (tab.url.startsWith("https://gateway.iitj.ac.in")) {
       if (tab.url.includes("fgtauth")) {
-        getCredentials().then(([username, password]) => {
-          if (username && password)
-            chrome.scripting.executeScript({
-              target: { tabId: id },
-              func: enterGateway,
-              args: [username, password]
-            });
-        });
+        getAutoLoginSetting().then(autoLogin => {
+          if (autoLogin) getCredentials().then(([username, password]) => {
+            if (username && password)
+              chrome.scripting.executeScript({
+                target: { tabId: id },
+                func: enterGateway,
+                args: [username, password]
+              });
+          });
+        })
       }
       else if (tab.url.includes("keepalive")) {
-        if (!polling) poll();
         token = tab.url.split('?')[1];
-        // closeAuthTabs();
       }
       else if (tab.url.includes("logout")) {
         token = null;
       }
     }
-    if (tab.url == "http://www.gstatic.com/generate_204") {
-      chrome.tabs.remove(tab.id);
-    }
   }
 });
-function logout() {
-  chrome.tabs.create({
-    url: `https://gateway.iitj.ac.in:1003/logout?${token}`,
-  })
-}
-
-poll();
-// MACRO Polling
-setInterval(() => {
-  if (!polling) {
-    poll();
-  }
-}, 15000);
