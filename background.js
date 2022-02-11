@@ -2,7 +2,7 @@ importScripts('rxjs/rxjs.umd.min.js');
 importScripts('utility/connected.js');
 importScripts('utility/gateway.js');
 
-const { interval, from, merge } = rxjs;
+const { timer, from, merge } = rxjs;
 const {
   map,
   mergeMap,
@@ -12,7 +12,8 @@ const {
   pairwise,
 } = rxjs.operators;
 
-const heartBeat = interval(1500);
+// Interval that emits immediately and then at every 1500ms
+const heartBeat = timer(0, 1500);
 
 const networkCheckObesrvable_v1 = heartBeat.pipe(
   mergeMap(() => from(isConnected(2000)))
@@ -32,15 +33,15 @@ const onErrorObservable = rxjs.Observable.create(observer => {
 const failedObservable = merge(
   onErrorObservable.pipe(
     filter(details => (details.error === "net::ERR_CERT_COMMON_NAME_INVALID")),
-    map((details) => ({ observable: 'onError', details, time: new Date().toTimeString() }))
+    map((details) => ({ observable: 'onError', details, time: Date.now(), timeString: new Date().toTimeString() }))
   ),
   networkCheckObesrvable_v1.pipe(
     filter(connected => (!connected)),
-    map((connected) => ({ observable: 'network check v1', details: { connected }, time: new Date().toTimeString() }))
+    map((connected) => ({ observable: 'network check v1', details: { connected }, time: Date.now(), timeString: new Date().toTimeString() }))
   ),
   networkCheckObesrvable_v2.pipe(
     filter(connected => (!connected)),
-    map((connected) => ({ observable: 'network check v2', details: { connected }, time: new Date().toTimeString() }))
+    map((connected) => ({ observable: 'network check v2', details: { connected }, time: Date.now(), timeString: new Date().toTimeString() }))
   )
 );
 
@@ -48,7 +49,7 @@ failedObservable.subscribe((error) => {
   console.log('Failed observable emitted:', error);
 });
 
-const navigatorOnlineObservable = interval(100).pipe(
+const navigatorOnlineObservable = timer(0, 100).pipe(
   map(() => navigator.onLine),
   pairwise(),
   filter(([prev_value, new_value]) => (new_value && prev_value !== new_value)),
@@ -57,13 +58,17 @@ navigatorOnlineObservable.subscribe(console.log);
 
 const majorObservable = merge(
   failedObservable.pipe(
-    bufferTime(1500),
-    filter(failureList => ((failureList.length > 1) && navigator.onLine)),
+    pairwise(),
+    filter(pair => {
+      const timeDifference = pair[1].time - pair[0].time;
+      return timeDifference < 1500;
+    }),
+    filter(() => navigator.onLine),
     throttleTime(15000),
-    map((failureList) => ({ observable: 'failed observable', failureList, time: new Date().toTimeString() }))
+    map((pair) => ({ observable: 'failed observable', pair, time: Date.now(), timeString: new Date().toTimeString() }))
   ),
   navigatorOnlineObservable.pipe(
-    map(() => ({ observable: 'window navigator online', time: new Date().toTimeString() }))
+    map(() => ({ observable: 'window navigator online', time: Date.now(), timeString: new Date().toTimeString() }))
   )
 );
 
