@@ -1,6 +1,6 @@
 {
-  "name": "Gateway",
-  "description": "Forticlient Gateway Extension",
+  "name": "IIT J Gateway Extension",
+  "description": "IIT J Forticlient Gateway Extension",
   "version": "1.0",
   "manifest_version": 3,
   "background": {
