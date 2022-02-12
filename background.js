@@ -97,7 +97,7 @@ function closeEmptyAuthTabs() {
     tabs.map((tab) => {
       if ((tab.url === "" && tab.pendingUrl == "http://www.gstatic.com/generate_204") ||
         (tab.title.startsWith("www.gstatic.com") && tab.url == "http://www.gstatic.com/generate_204") ||
-        (tab.url === "https://gateway.iitj.ac.in:1003/")) {
+        (tab.title === "gateway.iitj.ac.in" && tab.url.startsWith("https://gateway.iitj.ac.in:1003"))) {
         chrome.tabs.remove(tab.id, () => console.log('Removed', tab.id));
       }
     });
