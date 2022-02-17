@@ -16,7 +16,7 @@ const {
 const heartBeat = timer(0, 1500);
 
 const networkCheckObesrvable_v1 = heartBeat.pipe(
-  mergeMap(() => from(isConnected(2000)))
+  mergeMap(() => from(isConnected_v3(2000)))
 );
 const networkCheckObesrvable_v2 = heartBeat.pipe(
   mergeMap(() => from(isConnected_v2(2000)))

@@ -39,3 +39,13 @@ function isConnected_v2(timeout = 4000) {
     .then(res => checkStatus(res))
     .catch(() => false);
 }
+
+function getMSNStatus(timeout = 4000) {
+  return fetchTimeout('https://www.msn.com/favicon.ico', timeout, { mode: "no-cors", method: "HEAD" });
+}
+
+function isConnected_v3(timeout = 4000) {
+  return getMSNStatus(timeout)
+    .then(res => checkStatus(res))
+    .catch(() => false);
+}
