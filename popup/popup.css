@@ -3,7 +3,7 @@
 .App {
   display: flex;
   flex-direction: column;
-  width: 20rem;
+  width: 23rem;
   border: 2px solid #80808060;
   padding: 1rem 1rem 0.5rem;
 }
@@ -215,4 +215,13 @@ button:active {
 
 .hidden {
  display: none;
+}
+
+.full-width {
+  max-width: none;
+}
+
+.info {
+  font-size: 12px;
+  margin: 8px 4px;
 }

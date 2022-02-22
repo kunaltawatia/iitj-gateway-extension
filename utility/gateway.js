@@ -1,12 +1,12 @@
 const authGroupOptions = {
   title: "Auth", color: "green"
 };
-function openGateway() {
+function openGateway(active=false) {
   return chrome.tabGroups.query(authGroupOptions).then((tabGroups) => {
     authGroupId = tabGroups[0]?.id ?? null;
     chrome.tabs.create({
       url: "http://www.gstatic.com/generate_204",
-      active: false,
+      active,
       index: 0
     }).then(tab => {
       console.log('Tab created', tab.id);
@@ -15,7 +15,7 @@ function openGateway() {
         groupId: authGroupId,
       }, groupId => {
         console.log('Group tapped', groupId);
-        chrome.tabGroups?.update(groupId, { ...authGroupOptions, collapsed: true });
+        chrome.tabGroups?.update(groupId, { ...authGroupOptions, collapsed: !active });
       })
     });
   })

@@ -13,6 +13,11 @@
         style="margin: 0.5rem;" />
       <h1>Gateway Extension</h1>
     </div>
+    <button id="open-gateway" class="button full-width">Open Gateway</button>
+    <p class="info">
+      Click to open the FortiClient Gateway tab<br/>
+      *Tab closes automatically if the internet connection is live.
+    </p>
     <div id="loading-container" class="loading-container">
       <div class="lds-ripple">
         <div></div>
@@ -28,6 +33,10 @@
           <span class="slider round"></span>
         </label>
       </div>
+      <p class="info">
+        When ON, the extension automatically opens the gateway tab
+        once the connection goes offline.
+      </p>
       <div class="input-holder border">
         <label for="auto-login">Auto Login</label>
         <label class="switch">
@@ -35,6 +44,10 @@
           <span class="slider round"></span>
         </label>
       </div>
+      <p class="info">
+        When ON, the extension will automatically fill the form and login 
+        through the FortiClient Gateway tab.
+      </p>
       <div id="LDAP">
         <h3 style="text-align: center;">LDAP</h3>
         <div class="input-holder">
@@ -45,6 +58,10 @@
           <label for="password">Password</label>
           <input id="password">
         </div>
+        <p class="info">
+          *Credentials are required to auto login.<br/>
+          This information is strictly stored in your local machine.
+        </p>
       </div>
     </div>
     <p class="version">v0.1</p>

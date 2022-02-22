@@ -59,3 +59,9 @@ function stopLoading() {
   document.getElementById("loading-container").classList.add('hidden');
   document.getElementById("form-container").classList.remove('hidden');
 }
+
+document.getElementById('open-gateway').addEventListener('click', () => {
+  chrome.runtime.sendMessage({ action: 'OPEN_GATEWAY' }, (err) => {
+    if (err) console.error(err);
+  })
+});

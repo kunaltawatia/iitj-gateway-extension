@@ -131,3 +131,13 @@ chrome.tabs.onUpdated.addListener((id, info, tab) => {
     }
   }
 });
+
+chrome.runtime.onMessage.addListener((req, sender, res) => {
+  switch (req.action) {
+    case 'OPEN_GATEWAY':
+      openGateway(active=true);
+      break;
+    default:
+      break;
+  }
+})
