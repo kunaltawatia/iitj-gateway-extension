@@ -13,6 +13,13 @@ We are all fed up of logging in everytime we open our laptops. I don't think we 
 
 This is a bare minimal extension. Follow the steps [here](https://developer.chrome.com/docs/extensions/mv3/getstarted/#unpacked) to load the unpacked extension and start local development.
 
+## Build
+Compress the relevant files into publishable zip.
+
+#### Windows
+
+`Compress-archive -Path popup,rxjs,images,utility,background.js,manifest.json -Update -DestinationPath gateway-extension.zip`
+
 ## Team
 |Name|Department|
 |--|--|
